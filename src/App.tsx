@@ -9,6 +9,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock,
+  Lock,
   Menu,
   Minus,
   Plus,
@@ -16,6 +17,14 @@ import {
   X,
 } from 'lucide-react'
 import { chapters, totalWords, type Chapter } from './data/chapters'
+import NarrationPlayer from './components/NarrationPlayer'
+import StoryMap from './components/StoryMap'
+import Gate from './components/Gate'
+import AgeGate, { hasAgeConsent } from './components/AgeGate'
+import Memorabilia from './components/Memorabilia'
+import useUnlock from './hooks/useUnlock'
+import { isAdultChapter } from './config'
+import { syncAds } from './ads'
 import './App.css'
 
 type Route = { view: 'home' } | { view: 'reader'; slug: string }
@@ -83,7 +92,7 @@ function SiteHeader({ route, lastRead }: { route: Route; lastRead: string }) {
       <header className="site-header">
         <Wordmark onClick={() => navigate('top')} />
         <nav className="desktop-nav" aria-label="Main navigation">
-          <button onClick={() => navigate('ebook')}>The ebook</button>
+          <button onClick={() => navigate('reader')}>The reader</button>
           <button onClick={() => navigate('memorabilia')}>Memorabilia</button>
           <button onClick={() => navigate('chapters')}>Chapters</button>
         </nav>
@@ -100,7 +109,7 @@ function SiteHeader({ route, lastRead }: { route: Route; lastRead: string }) {
       {open && (
         <div className="mobile-menu" id="mobile-menu">
           <nav aria-label="Mobile navigation">
-            <button onClick={() => navigate('ebook')}>The ebook <ArrowRight size={18} /></button>
+            <button onClick={() => navigate('reader')}>The reader <ArrowRight size={18} /></button>
             <button onClick={() => navigate('memorabilia')}>Memorabilia <ArrowRight size={18} /></button>
             <button onClick={() => navigate('chapters')}>Chapters <ArrowRight size={18} /></button>
             <button onClick={() => { setOpen(false); goRead(chapters[0].slug) }}>Start with the prologue <ArrowRight size={18} /></button>
@@ -124,10 +133,10 @@ function ChapterIndex({ bookmarks, onRead }: { bookmarks: string[]; onRead: (slu
     <section className="chapters-section" id="chapters" aria-labelledby="chapters-title">
       <div className="section-heading chapter-heading">
         <div>
-          <p className="eyebrow">The complete manuscript</p>
+          <p className="eyebrow">The transmission so far</p>
           <h2 id="chapters-title">Start reading.</h2>
         </div>
-        <p>One prologue. Twenty-eight chapters.<br />Every signal, from first contact to open bandwidth.</p>
+        <p>One prologue. Twenty-eight chapters.<br />New signals arrive as they’re received.</p>
       </div>
       <div className="chapter-tools">
         <label className="search-field">
@@ -159,7 +168,7 @@ function ChapterIndex({ bookmarks, onRead }: { bookmarks: string[]; onRead: (slu
         {filtered.length === 0 && (
           <div className="empty-state">
             <p>{bookmarkedOnly && bookmarks.length === 0 ? 'No chapters bookmarked yet.' : 'No chapters match that signal.'}</p>
-            <button onClick={() => { setQuery(''); setBookmarkedOnly(false) }}>Show the complete manuscript</button>
+            <button onClick={() => { setQuery(''); setBookmarkedOnly(false) }}>Show every transmission</button>
           </div>
         )}
       </div>
@@ -167,7 +176,7 @@ function ChapterIndex({ bookmarks, onRead }: { bookmarks: string[]; onRead: (slu
   )
 }
 
-function Home({ bookmarks, lastRead }: { bookmarks: string[]; lastRead: string }) {
+function Home({ bookmarks, lastRead, onReadChapter }: { bookmarks: string[]; lastRead: string; onReadChapter: (slug: string) => void }) {
   const lastChapter = chapters.find((chapter) => chapter.slug === lastRead) ?? chapters[0]
   return (
     <main>
@@ -177,14 +186,14 @@ function Home({ bookmarks, lastRead }: { bookmarks: string[]; lastRead: string }
         <div className="hero-content">
           <p className="hero-overline">A serialized supernatural thriller</p>
           <h1 id="hero-title"><span>HARDLY</span><span>DARKLY</span></h1>
-          <p className="hero-subtitle">The complete manuscript is now available.</p>
+          <p className="hero-subtitle">Press play. The signal reads itself aloud.</p>
           <button className="primary-cta" onClick={() => goRead(chapters[0].slug)}>
             Enter the signal <ArrowRight size={18} />
           </button>
         </div>
         <div className="hero-footer">
           <span>San Francisco / 19.8 Hz</span>
-          <span>Prologue + 28 chapters</span>
+          <span>28 transmissions, more coming</span>
           <span className="scroll-cue">Scroll to descend <span aria-hidden="true">↓</span></span>
         </div>
       </section>
@@ -196,18 +205,18 @@ function Home({ bookmarks, lastRead }: { bookmarks: string[]; lastRead: string }
         <p>“The air wasn’t just distorting anymore.<br />It was tearing.”</p>
       </section>
 
-      <section className="ebook-section" id="ebook" aria-labelledby="ebook-title">
-        <div className="section-label"><span>01</span> The ebook</div>
+      <section className="reader-section" id="reader" aria-labelledby="reader-title">
+        <div className="section-label"><span>01</span> The reader</div>
         <div className="ebook-copy">
           <p className="eyebrow">The story finds you</p>
-          <h2 id="ebook-title">A city being<br /><em>recorded over.</em></h2>
-          <p className="large-copy">A signal that shouldn’t exist. A frequency only Samantha White can hear. And a door beneath San Francisco that has been holding since 1977.</p>
+          <h2 id="reader-title">Press play.<br /><em>Let the city read to you.</em></h2>
+          <p className="large-copy">A signal that shouldn’t exist. A frequency only Samantha White can hear. And a door beneath San Francisco that has been holding since 1977. The transmission is ongoing — this is everything received so far.</p>
           <ul className="feature-list">
-            <li><span>01</span> Complete prologue and 28 chapters</li>
-            <li><span>02</span> Distraction-free reading controls</li>
-            <li><span>03</span> Chapter bookmarks and reading progress</li>
+            <li><span>01</span> Prologue + 28 transmissions, more coming</li>
+            <li><span>02</span> Press play and the story reads itself aloud</li>
+            <li><span>03</span> Bookmarks, progress, reading controls</li>
           </ul>
-          <button className="text-link" onClick={() => goRead(lastChapter.slug)}>
+          <button className="text-link" onClick={() => onReadChapter(lastChapter.slug)}>
             {lastRead === chapters[0].slug ? 'Begin with the prologue' : `Continue: ${lastChapter.title}`} <ArrowRight size={17} />
           </button>
         </div>
@@ -219,22 +228,7 @@ function Home({ bookmarks, lastRead }: { bookmarks: string[]; lastRead: string }
         </aside>
       </section>
 
-      <section className="memorabilia-section" id="memorabilia" aria-labelledby="memorabilia-title">
-        <div className="memorabilia-image" role="img" aria-label="A candle, antique key, magnetic tape and photographs arranged on dark wood" />
-        <div className="memorabilia-copy">
-          <div className="section-label"><span>02</span> Memorabilia</div>
-          <p className="eyebrow">Artifacts from the edge</p>
-          <h2 id="memorabilia-title">Objects that<br />carry the mood.</h2>
-          <p>Candles, pins, prints—physical fragments from the world of Hardly Darkly. Limited runs. No restocks.</p>
-          <div className="product-index" aria-label="Memorabilia collection">
-            <div><span>Edge Candle</span><span>$28</span></div>
-            <div><span>Signal Enamel Pin</span><span>$14</span></div>
-            <div><span>Chapter Print Set</span><span>$22</span></div>
-            <div><span>Threshold Tote</span><span>$34</span></div>
-          </div>
-          <p className="availability-note">Collection preview — checkout is not available in this reader edition.</p>
-        </div>
-      </section>
+      <Memorabilia />
 
       <section className="quote-section">
         <p className="eyebrow">From the manuscript</p>
@@ -261,7 +255,7 @@ function Home({ bookmarks, lastRead }: { bookmarks: string[]; lastRead: string }
         </div>
       </section>
 
-      <ChapterIndex bookmarks={bookmarks} onRead={goRead} />
+      <ChapterIndex bookmarks={bookmarks} onRead={onReadChapter} />
 
       <footer className="site-footer">
         <Wordmark onClick={() => goHome('top')} />
@@ -289,9 +283,14 @@ type ReaderProps = {
   setBookmarks: Dispatch<SetStateAction<string[]>>
   readChapters: string[]
   setReadChapters: Dispatch<SetStateAction<string[]>>
+  unlocked: boolean
+  unlockPending: boolean
+  onCheckout: (slug: string) => Promise<void>
+  onRestore: () => Promise<void>
+  onReadChapter: (slug: string) => void
 }
 
-function Reader({ chapter, bookmarks, setBookmarks, readChapters, setReadChapters }: ReaderProps) {
+function Reader({ chapter, bookmarks, setBookmarks, readChapters, setReadChapters, unlocked, unlockPending, onCheckout, onRestore, onReadChapter }: ReaderProps) {
   const [progress, setProgress] = useState(0)
   const [fontSize, setFontSize] = usePersistentState('hardly-darkly-font-size', 20)
   const [sans, setSans] = usePersistentState('hardly-darkly-sans', false)
@@ -301,9 +300,12 @@ function Reader({ chapter, bookmarks, setBookmarks, readChapters, setReadChapter
   const previous = chapters[index - 1]
   const next = chapters[index + 1]
   const bookmarked = bookmarks.includes(chapter.slug)
+  const [spoken, setSpoken] = useState<number | null>(null)
+  const locked = isAdultChapter(chapter.number) && !unlocked
 
   useEffect(() => {
     setProgress(0)
+    setSpoken(null)
     setIndexOpen(false)
     window.scrollTo(0, 0)
     document.title = `${chapterLabel(chapter)}: ${chapter.title} — Hardly Darkly`
@@ -350,9 +352,10 @@ function Reader({ chapter, bookmarks, setBookmarks, readChapters, setReadChapter
       <div className="reader-index-heading"><span>Transmission index</span><span>{chapters.length}</span></div>
       <div className="reader-index-scroll">
         {chapters.map((item) => (
-          <button key={item.slug} className={item.slug === chapter.slug ? 'current' : ''} onClick={() => goRead(item.slug)} aria-current={item.slug === chapter.slug ? 'page' : undefined}>
+          <button key={item.slug} className={item.slug === chapter.slug ? 'current' : ''} onClick={() => onReadChapter(item.slug)} aria-current={item.slug === chapter.slug ? 'page' : undefined}>
             <span>{shortLabel(item)}</span>
             <span>{item.title}</span>
+            {isAdultChapter(item.number) && !unlocked && <Lock size={11} aria-label="Adults only — locked" />}
             {readChapters.includes(item.slug) && <Check size={13} aria-label="Read" />}
           </button>
         ))}
@@ -394,16 +397,36 @@ function Reader({ chapter, bookmarks, setBookmarks, readChapters, setReadChapter
               <span>{Math.round(progress * 100)}% read</span>
             </div>
           </header>
-          <div className="reader-body">
-            {chapter.paragraphs.map((paragraph, paragraphIndex) => (
-              <p key={paragraphIndex} className={paragraphIndex === 0 ? 'opening-paragraph' : ''}>{renderInline(paragraph)}</p>
-            ))}
-          </div>
-          <div className="chapter-end">
-            <span>END OF {chapterLabel(chapter).toUpperCase()}</span>
-            <i aria-hidden="true" />
-            <span>19.8 HZ</span>
-          </div>
+          {!locked && (
+            <NarrationPlayer
+              paragraphs={chapter.paragraphs}
+              chapterTitle={chapter.title}
+              onParagraph={(index) => setSpoken(index)}
+              onEnded={() => { if (next && !isAdultChapter(next.number)) goRead(next.slug) }}
+            />
+          )}
+          {locked ? (
+            <Gate
+              pending={unlockPending}
+              slug={chapter.slug}
+              onCheckout={(target) => { void onCheckout(target) }}
+              onRestore={() => { void onRestore() }}
+            />
+          ) : (
+            <>
+              <div className="reader-body">
+                {chapter.paragraphs.map((paragraph, paragraphIndex) => (
+                  <p key={paragraphIndex} className={`${paragraphIndex === 0 ? 'opening-paragraph' : ''}${spoken === paragraphIndex ? ' spoken' : ''}`}>{renderInline(paragraph)}</p>
+                ))}
+              </div>
+              {chapter.number === 18 && <StoryMap />}
+              <div className="chapter-end">
+                <span>END OF {chapterLabel(chapter).toUpperCase()}</span>
+                <i aria-hidden="true" />
+                <span>19.8 HZ</span>
+              </div>
+            </>
+          )}
           <nav className="previous-next" aria-label="Adjacent chapters">
             {previous ? (
               <button className="previous" onClick={() => goRead(previous.slug)}>
@@ -412,11 +435,11 @@ function Reader({ chapter, bookmarks, setBookmarks, readChapters, setReadChapter
             ) : <span />}
             {next ? (
               <button className="next" onClick={() => goRead(next.slug)}>
-                <span><small>Next transmission</small><strong>{next.title}</strong></span><ChevronRight size={20} />
+                <span><small>{isAdultChapter(next.number) ? 'The door — adults only' : 'Next transmission'}</small><strong>{next.title}</strong></span><ChevronRight size={20} />
               </button>
             ) : (
               <button className="next" onClick={() => goHome('chapters')}>
-                <span><small>Transmission complete</small><strong>Return to chapter index</strong></span><ArrowRight size={20} />
+                <span><small>You are at the live edge</small><strong>The next transmission is coming</strong></span><ArrowRight size={20} />
               </button>
             )}
           </nav>
@@ -452,6 +475,8 @@ export default function App() {
   const [bookmarks, setBookmarks] = usePersistentState<string[]>('hardly-darkly-bookmarks', [])
   const [readChapters, setReadChapters] = usePersistentState<string[]>('hardly-darkly-read', [])
   const [lastRead, setLastRead] = usePersistentState('hardly-darkly-last-read', chapters[0].slug)
+  const [ageTarget, setAgeTarget] = useState<string | null>(null)
+  const { unlocked, pending: unlockPending, checkout, restore } = useUnlock()
 
   useEffect(() => {
     const update = () => setRoute(routeFromHash())
@@ -474,14 +499,60 @@ export default function App() {
 
   const current = route.view === 'reader' ? chapters.find((chapter) => chapter.slug === route.slug) : undefined
 
+  // AdSense only on surfaces safe for monetization — never on adult chapters.
+  useEffect(() => {
+    syncAds(route.view !== 'reader' || !current || !isAdultChapter(current.number))
+  }, [route, current])
+
+  // Adult chapters must not be indexed.
+  useEffect(() => {
+    const adult = route.view === 'reader' && current ? isAdultChapter(current.number) : false
+    const existing = document.querySelector('meta[name="robots"]')
+    if (adult) {
+      if (existing) {
+        existing.setAttribute('content', 'noindex')
+      } else {
+        const meta = document.createElement('meta')
+        meta.name = 'robots'
+        meta.content = 'noindex'
+        document.head.appendChild(meta)
+      }
+    } else if (existing) {
+      existing.remove()
+    }
+  }, [route, current])
+
+  const readChapter = (slug: string) => {
+    const target = chapters.find((item) => item.slug === slug)
+    if (target && isAdultChapter(target.number) && !unlocked && !hasAgeConsent()) {
+      setAgeTarget(slug)
+      return
+    }
+    goRead(slug)
+  }
+
   return (
     <div className="app-shell">
       <SiteHeader route={route} lastRead={lastRead} />
       {route.view === 'reader' && current ? (
-        <Reader chapter={current} bookmarks={bookmarks} setBookmarks={setBookmarks} readChapters={readChapters} setReadChapters={setReadChapters} />
+        <Reader
+          chapter={current}
+          bookmarks={bookmarks}
+          setBookmarks={setBookmarks}
+          readChapters={readChapters}
+          setReadChapters={setReadChapters}
+          unlocked={unlocked}
+          unlockPending={unlockPending}
+          onCheckout={checkout}
+          onRestore={restore}
+          onReadChapter={readChapter}
+        />
       ) : route.view === 'reader' ? (
-        <main className="not-found"><p className="eyebrow">Signal lost</p><h1>That chapter doesn’t exist.</h1><button className="primary-cta" onClick={() => goHome('chapters')}>Return to the manuscript <ArrowRight size={18} /></button></main>
-      ) : <Home bookmarks={bookmarks} lastRead={lastRead} />}
+        <main className="not-found"><p className="eyebrow">Signal lost</p><h1>That chapter doesn’t exist.</h1><button className="primary-cta" onClick={() => goHome('chapters')}>Return to the transmission index <ArrowRight size={18} /></button></main>
+      ) : <Home bookmarks={bookmarks} lastRead={lastRead} onReadChapter={readChapter} />}
+      {ageTarget && (
+        <AgeGate onConfirm={() => { const slug = ageTarget; setAgeTarget(null); goRead(slug) }} />
+      )}
     </div>
   )
 }
