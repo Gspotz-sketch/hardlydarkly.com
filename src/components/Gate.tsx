@@ -33,6 +33,7 @@ export default function Gate({ pending, onCheckout, onRestore, slug }: GateProps
         {consented ? <DoorOpen size={44} /> : <DoorClosed size={44} />}
         <span className="door-seam" />
       </div>
+      <img className="door-seal" src="/images/hardly_darkly_rune_seal.jpg" alt="" aria-hidden="true" />
       <p className="eyebrow"><Lock size={13} aria-hidden="true" /> Transmission restricted</p>
       <h2>The door only opens for $2.99.</h2>
       <p className="door-copy">

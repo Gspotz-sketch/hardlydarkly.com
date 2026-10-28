@@ -8,15 +8,28 @@ type NarrationPlayerProps = {
   onEnded?: () => void
 }
 
+function scoreVoice(voice: SpeechSynthesisVoice): number {
+  const name = `${voice.name} ${voice.voiceURI}`.toLowerCase()
+  let score = 0
+  if (/natural|neural|online|premium|enhanced|aria|jenny|guy|samantha|zira|alloy|nova|shimmer/.test(name)) score += 40
+  if (/google/.test(name)) score += 20
+  if (voice.lang === 'en-US') score += 10
+  else if (voice.lang.startsWith('en')) score += 5
+  if (/compact|espeak|robot|retro/.test(name)) score -= 30
+  return score
+}
+
+function englishVoices(): SpeechSynthesisVoice[] {
+  const voices = window.speechSynthesis?.getVoices() ?? []
+  return voices.filter((voice) => voice.lang.startsWith('en'))
+}
+
 function pickVoice(): SpeechSynthesisVoice | null {
   const voices = window.speechSynthesis?.getVoices() ?? []
   if (!voices.length) return null
-  const english = voices.filter((voice) => voice.lang.startsWith('en'))
-  const preferred =
-    english.find((voice) => /google us english/i.test(voice.name)) ??
-    english.find((voice) => voice.lang === 'en-US') ??
-    english[0]
-  return preferred ?? voices[0]
+  const english = englishVoices()
+  const pool = english.length ? english : voices
+  return pool.slice().sort((a, b) => scoreVoice(b) - scoreVoice(a))[0] ?? null
 }
 
 /**
@@ -27,9 +40,23 @@ export default function NarrationPlayer({ paragraphs, chapterTitle, onParagraph,
   const [playing, setPlaying] = useState(false)
   const [position, setPosition] = useState(0) // paragraph cursor
   const [supported] = useState(() => typeof window !== 'undefined' && 'speechSynthesis' in window)
+  const [voiceURI, setVoiceURI] = useState<string>('')
+  const [voiceOptions, setVoiceOptions] = useState<SpeechSynthesisVoice[]>([])
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null)
   const paragraphsRef = useRef(paragraphs)
   paragraphsRef.current = paragraphs
+
+  const refreshVoices = useCallback(() => {
+    const list = englishVoices()
+    setVoiceOptions(list)
+    const best = pickVoice()
+    if (best && !voiceURI) setVoiceURI(best.voiceURI)
+  }, [voiceURI])
+
+  const chosenVoice = useCallback((): SpeechSynthesisVoice | null => {
+    const voices = window.speechSynthesis?.getVoices() ?? []
+    return voices.find((voice) => voice.voiceURI === voiceURI) ?? pickVoice()
+  }, [voiceURI])
 
   const stop = useCallback((notify = true) => {
     window.speechSynthesis?.cancel()
@@ -43,7 +70,7 @@ export default function NarrationPlayer({ paragraphs, chapterTitle, onParagraph,
     window.speechSynthesis.cancel()
     const text = paragraphsRef.current.slice(startIndex).join('\n\n')
     const utterance = new SpeechSynthesisUtterance(text)
-    const voice = pickVoice()
+    const voice = chosenVoice()
     if (voice) utterance.voice = voice
     utterance.rate = 0.95
     utterance.pitch = 1
@@ -80,7 +107,7 @@ export default function NarrationPlayer({ paragraphs, chapterTitle, onParagraph,
     onParagraph?.(startIndex)
     setPlaying(true)
     window.speechSynthesis.speak(utterance)
-  }, [supported, onParagraph, onEnded])
+  }, [supported, onParagraph, onEnded, chosenVoice])
 
   // Cancel whenever the chapter changes or the component unmounts.
   useEffect(() => {
@@ -91,11 +118,10 @@ export default function NarrationPlayer({ paragraphs, chapterTitle, onParagraph,
   }, [paragraphs])
 
   useEffect(() => {
-    const warm = () => pickVoice()
-    warm()
-    window.speechSynthesis?.addEventListener('voiceschanged', warm)
-    return () => window.speechSynthesis?.removeEventListener('voiceschanged', warm)
-  }, [])
+    refreshVoices()
+    window.speechSynthesis?.addEventListener('voiceschanged', refreshVoices)
+    return () => window.speechSynthesis?.removeEventListener('voiceschanged', refreshVoices)
+  }, [refreshVoices])
 
   if (!supported) return null
 
@@ -120,6 +146,23 @@ export default function NarrationPlayer({ paragraphs, chapterTitle, onParagraph,
         )}
         <button onClick={() => speakFrom(Math.min(total - 1, position + 1))} disabled={atEnd} aria-label="Next paragraph"><SkipForward size={15} /></button>
         <button onClick={() => { stop(); setPosition(0) }} aria-label="Stop narration" className="np-stop">Stop</button>
+      </div>
+      <div className="np-voice">
+        <select
+          aria-label="Narration voice"
+          value={voiceURI}
+          onChange={(event) => {
+            stop()
+            setVoiceURI(event.target.value)
+          }}
+        >
+          {voiceOptions.length === 0 && <option value="">Default voice</option>}
+          {voiceOptions.map((voice) => (
+            <option key={voice.voiceURI} value={voice.voiceURI}>
+              {voice.name.replace(/Microsoft |Google /, '')} ({voice.lang})
+            </option>
+          ))}
+        </select>
       </div>
       <div className="np-progress" aria-hidden="true"><i style={{ transform: `scaleX(${total > 1 ? position / (total - 1) : 0})` }} /></div>
     </div>

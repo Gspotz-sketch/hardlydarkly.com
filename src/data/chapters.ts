@@ -5,6 +5,7 @@ export type Chapter = {
   excerpt: string
   wordCount: number
   paragraphs: string[]
+  art?: string
 }
 
 export const chapters: Chapter[] = [
@@ -296,6 +297,7 @@ export const chapters: Chapter[] = [
   },
   {
     "number": 10,
+    "art": "/images/chapters/chapter10_signal.jpg",
     "slug": "chapter-10",
     "title": "The Infiltration",
     "paragraphs": [
@@ -374,6 +376,7 @@ export const chapters: Chapter[] = [
   },
   {
     "number": 13,
+    "art": "/images/chapters/chapter13_gambit.jpg",
     "slug": "chapter-13",
     "title": "Fourfootyest’s Gambit (Part 2)",
     "paragraphs": [
@@ -395,6 +398,7 @@ export const chapters: Chapter[] = [
   },
   {
     "number": 14,
+    "art": "/images/chapters/chapter14_unsealing.jpg",
     "slug": "chapter-14",
     "title": "The Unsealing",
     "paragraphs": [
@@ -427,6 +431,7 @@ export const chapters: Chapter[] = [
   },
   {
     "number": 15,
+    "art": "/images/chapters/chapter15_cascade.jpg",
     "slug": "chapter-15",
     "title": "Signal Cascade",
     "paragraphs": [
@@ -455,6 +460,7 @@ export const chapters: Chapter[] = [
   },
   {
     "number": 16,
+    "art": "/images/chapters/chapter16_blackout.jpg",
     "slug": "chapter-16",
     "title": "Black Out",
     "paragraphs": [
@@ -476,6 +482,7 @@ export const chapters: Chapter[] = [
   },
   {
     "number": 17,
+    "art": "/images/chapters/chapter17_presidio.jpg",
     "slug": "chapter-17",
     "title": "The Presidio Vault",
     "paragraphs": [
@@ -503,6 +510,7 @@ export const chapters: Chapter[] = [
   },
   {
     "number": 18,
+    "art": "/images/chapters/chapter18_tracking.jpg",
     "slug": "chapter-18",
     "title": "Tracking Error",
     "paragraphs": [
@@ -526,6 +534,7 @@ export const chapters: Chapter[] = [
   },
   {
     "number": 19,
+    "art": "/images/chapters/chapter19_splicing.jpg",
     "slug": "chapter-19",
     "title": "Erase Head",
     "paragraphs": [
@@ -562,6 +571,7 @@ export const chapters: Chapter[] = [
   },
   {
     "number": 20,
+    "art": "/images/chapters/chapter20_logbook.jpg",
     "slug": "chapter-20",
     "title": "The Master Reel",
     "paragraphs": [
@@ -590,6 +600,7 @@ export const chapters: Chapter[] = [
   },
   {
     "number": 21,
+    "art": "/images/chapters/chapter21_rewiring.jpg",
     "slug": "chapter-21",
     "title": "1977",
     "paragraphs": [
@@ -614,6 +625,7 @@ export const chapters: Chapter[] = [
   },
   {
     "number": 22,
+    "art": "/images/chapters/chapter22_gauntlet.jpg",
     "slug": "chapter-22",
     "title": "The Choir of Clement Street",
     "paragraphs": [
@@ -654,6 +666,7 @@ export const chapters: Chapter[] = [
   },
   {
     "number": 23,
+    "art": "/images/chapters/chapter23_landsend.jpg",
     "slug": "chapter-23",
     "title": "Lands End",
     "paragraphs": [
@@ -683,6 +696,7 @@ export const chapters: Chapter[] = [
   },
   {
     "number": 24,
+    "art": "/images/chapters/chapter24_holdtheline.jpg",
     "slug": "chapter-24",
     "title": "The Descent",
     "paragraphs": [
@@ -709,6 +723,7 @@ export const chapters: Chapter[] = [
   },
   {
     "number": 25,
+    "art": "/images/chapters/chapter25_thevessel.jpg",
     "slug": "chapter-25",
     "title": "The Ocean Floor",
     "paragraphs": [
@@ -751,6 +766,7 @@ export const chapters: Chapter[] = [
   },
   {
     "number": 26,
+    "art": "/images/chapters/chapter26_dualtone.jpg",
     "slug": "chapter-26",
     "title": "The Splice",
     "paragraphs": [
@@ -784,6 +800,7 @@ export const chapters: Chapter[] = [
   },
   {
     "number": 27,
+    "art": "/images/chapters/chapter27_bulkerase.jpg",
     "slug": "chapter-27",
     "title": "Bulk Erase",
     "paragraphs": [
@@ -811,6 +828,7 @@ export const chapters: Chapter[] = [
   },
   {
     "number": 28,
+    "art": "/images/chapters/chapter28_deadchannel.jpg",
     "slug": "chapter-28",
     "title": "Open Bandwidth",
     "paragraphs": [

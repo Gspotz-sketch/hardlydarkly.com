@@ -397,6 +397,11 @@ function Reader({ chapter, bookmarks, setBookmarks, readChapters, setReadChapter
               <span>{Math.round(progress * 100)}% read</span>
             </div>
           </header>
+          {chapter.art && (
+            <figure className="chapter-art">
+              <img src={chapter.art} alt={`Illustration — ${chapter.title}`} loading="lazy" />
+            </figure>
+          )}
           {!locked && (
             <NarrationPlayer
               paragraphs={chapter.paragraphs}

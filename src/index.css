@@ -128,3 +128,32 @@ select:focus-visible {
     scroll-behavior: auto !important;
   }
 }
+
+.chapter-art {
+  margin: 1.25rem 0 0.5rem;
+}
+.chapter-art img {
+  width: 100%;
+  border-radius: 6px;
+  border: 1px solid color-mix(in srgb, var(--reader-fg, #e8e4d8) 14%, transparent);
+  box-shadow: 0 12px 40px -18px rgba(0, 0, 0, 0.8);
+}
+
+.np-voice select {
+  background: transparent;
+  color: inherit;
+  border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+  border-radius: 4px;
+  font-size: 0.72rem;
+  padding: 2px 4px;
+  max-width: 180px;
+}
+
+.door-seal {
+  width: min(220px, 60%);
+  margin: 0.5rem auto 0;
+  display: block;
+  border-radius: 6px;
+  opacity: 0.9;
+  mix-blend-mode: lighten;
+}
