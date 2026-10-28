@@ -29,8 +29,12 @@ export async function onRequestGet(context: { request: Request; env: Record<stri
     return Response.json({ error: 'printful_not_configured' }, { status: 503 })
   }
 
+  const storeId = env.PRINTFUL_STORE_ID ?? '18913616'
   const response = await fetch('https://api.printful.com/store/products', {
-    headers: { Authorization: `Bearer ${env.PRINTFUL_API_TOKEN}` },
+    headers: {
+      Authorization: `Bearer ${env.PRINTFUL_API_TOKEN}`,
+      'X-PF-Store-Id': storeId,
+    },
   })
   if (!response.ok) {
     return Response.json({ error: 'printful_upstream_error' }, { status: 502 })
@@ -47,4 +51,6 @@ export async function onRequestGet(context: { request: Request; env: Record<stri
   }))
 
   return Response.json({ products })
+}
+eturn Response.json({ products })
 }
