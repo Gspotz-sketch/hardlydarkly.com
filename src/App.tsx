@@ -22,7 +22,7 @@ import StoryMap from './components/StoryMap'
 import Gate from './components/Gate'
 import AgeGate, { hasAgeConsent } from './components/AgeGate'
 import Memorabilia from './components/Memorabilia'
-import useUnlock from './hooks/useUnlock'
+import useUnlock, { type UnlockError } from './hooks/useUnlock'
 import { isAdultChapter } from './config'
 import { syncAds } from './ads'
 import './App.css'
@@ -285,12 +285,12 @@ type ReaderProps = {
   setReadChapters: Dispatch<SetStateAction<string[]>>
   unlocked: boolean
   unlockPending: boolean
-  onCheckout: (slug: string) => Promise<void>
-  onRestore: () => Promise<void>
+  unlockError: UnlockError
+  onSubmitCode: (code: string) => Promise<boolean>
   onReadChapter: (slug: string) => void
 }
 
-function Reader({ chapter, bookmarks, setBookmarks, readChapters, setReadChapters, unlocked, unlockPending, onCheckout, onRestore, onReadChapter }: ReaderProps) {
+function Reader({ chapter, bookmarks, setBookmarks, readChapters, setReadChapters, unlocked, unlockPending, unlockError, onSubmitCode, onReadChapter }: ReaderProps) {
   const [progress, setProgress] = useState(0)
   const [fontSize, setFontSize] = usePersistentState('hardly-darkly-font-size', 20)
   const [sans, setSans] = usePersistentState('hardly-darkly-sans', false)
@@ -413,9 +413,8 @@ function Reader({ chapter, bookmarks, setBookmarks, readChapters, setReadChapter
           {locked ? (
             <Gate
               pending={unlockPending}
-              slug={chapter.slug}
-              onCheckout={(target) => { void onCheckout(target) }}
-              onRestore={() => { void onRestore() }}
+              error={unlockError}
+              onSubmitCode={onSubmitCode}
             />
           ) : (
             <>
@@ -481,7 +480,7 @@ export default function App() {
   const [readChapters, setReadChapters] = usePersistentState<string[]>('hardly-darkly-read', [])
   const [lastRead, setLastRead] = usePersistentState('hardly-darkly-last-read', chapters[0].slug)
   const [ageTarget, setAgeTarget] = useState<string | null>(null)
-  const { unlocked, pending: unlockPending, checkout, restore } = useUnlock()
+  const { unlocked, pending: unlockPending, error: unlockError, submitCode } = useUnlock()
 
   useEffect(() => {
     const update = () => setRoute(routeFromHash())
@@ -548,8 +547,8 @@ export default function App() {
           setReadChapters={setReadChapters}
           unlocked={unlocked}
           unlockPending={unlockPending}
-          onCheckout={checkout}
-          onRestore={restore}
+          unlockError={unlockError}
+          onSubmitCode={submitCode}
           onReadChapter={readChapter}
         />
       ) : route.view === 'reader' ? (

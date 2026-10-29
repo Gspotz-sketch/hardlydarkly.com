@@ -1943,6 +1943,16 @@
 .door-consent input { accent-color: #c9a86a; }
 .door-actions { display: flex; flex-direction: column; align-items: center; gap: 0.9rem; margin-top: 1.25rem; }
 .door-fine { margin-top: 1.4rem; font-size: 0.72rem; color: rgba(232, 228, 216, 0.4); font-style: italic; }
+.door-steps { list-style: none; margin: 0.25rem 0 0; padding: 0; max-width: 30rem; display: grid; gap: 0.7rem; text-align: left; }
+.door-steps li { display: flex; gap: 0.75rem; align-items: baseline; font-size: 0.95rem; line-height: 1.5; color: rgba(232, 228, 216, 0.78); }
+.door-steps strong { color: #e8e4d8; }
+.step-num { flex: none; width: 1.4rem; height: 1.4rem; display: grid; place-items: center; border: 1px solid rgba(201, 168, 106, 0.5); border-radius: 50%; color: #c9a86a; font-size: 0.7rem; font-family: 'IBM Plex Mono', monospace; transform: translateY(0.25rem); }
+.door-code { margin-top: 1.5rem; display: grid; gap: 0.6rem; justify-items: center; }
+.door-code label { font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(232, 228, 216, 0.55); }
+.door-code-row { display: flex; gap: 0.6rem; justify-content: center; flex-wrap: wrap; }
+.door-code-row input { background: rgba(10, 13, 31, 0.85); border: 1px solid rgba(201, 168, 106, 0.4); color: #e8e4d8; padding: 0.7rem 0.9rem; border-radius: 3px; font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.08em; text-transform: uppercase; width: 13rem; max-width: 58vw; }
+.door-code-row input:focus { outline: none; border-color: #c9a86a; }
+.door-code .age-error { margin: 0; max-width: 28rem; }
 
 /* ===== Age gate ===== */
 .age-gate {

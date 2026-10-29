@@ -1,11 +1,13 @@
-import { useCallback, useEffect, useState } from 'react'
-import { UNLOCK_SESSION_KEY, UNLOCK_STORAGE_KEY } from '../config'
+import { useCallback, useState } from 'react'
+import { UNLOCK_STORAGE_KEY } from '../config'
+
+export type UnlockError = 'invalid' | 'network' | null
 
 export type UnlockState = {
   unlocked: boolean
   pending: boolean
-  checkout: (slug: string) => Promise<void>
-  restore: () => Promise<void>
+  error: UnlockError
+  submitCode: (code: string) => Promise<boolean>
 }
 
 function readFlag(): boolean {
@@ -17,13 +19,16 @@ function readFlag(): boolean {
 }
 
 /**
- * Tracks the $2.99 unlock. Purchase handoff goes through /api/checkout
- * (Stripe Checkout); the success redirect returns ?paid=1&session_id=…
- * which we verify against /api/verify before granting.
+ * Tracks the $2.99 unlock of the adult chapters (19–28).
+ * Payment happens off-site on Cash App; the buyer comes back with an unlock
+ * code, which /api/unlock checks against the UNLOCK_CODES env var.
+ * The unlock flag lives in localStorage, so the same code also re-opens the
+ * door on a new device — lost code, message the author for a reissue.
  */
 export default function useUnlock(): UnlockState {
   const [unlocked, setUnlocked] = useState(readFlag)
   const [pending, setPending] = useState(false)
+  const [error, setError] = useState<UnlockError>(null)
 
   const grant = useCallback(() => {
     try {
@@ -34,75 +39,34 @@ export default function useUnlock(): UnlockState {
     setUnlocked(true)
   }, [])
 
-  // Handle the Stripe success redirect and stored-session restore.
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    const paid = params.get('paid')
-    const sessionId = params.get('session_id')
-    if (paid === '1' && sessionId) {
-      setPending(true)
-      fetch('/api/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ session_id: sessionId }),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data?.paid) {
-            try {
-              window.localStorage.setItem(UNLOCK_SESSION_KEY, sessionId)
-            } catch {
-              // ignore
-            }
-            grant()
-          }
-        })
-        .catch(() => undefined)
-        .finally(() => {
-          setPending(false)
-          window.history.replaceState({}, '', window.location.pathname + window.location.hash)
-        })
-    }
-  }, [grant])
-
-  const checkout = useCallback(async (slug: string) => {
+  const submitCode = useCallback(async (code: string) => {
+    const trimmed = code.trim()
+    if (!trimmed) return false
     setPending(true)
+    setError(null)
     try {
-      const response = await fetch('/api/checkout', {
+      const response = await fetch('/api/unlock', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ slug }),
+        body: JSON.stringify({ code: trimmed }),
       })
-      const data = await response.json()
-      if (data?.url) {
-        window.location.assign(data.url)
+      if (response.status === 403) {
+        setError('invalid')
+        return false
       }
-    } finally {
-      setPending(false)
-    }
-  }, [])
-
-  const restore = useCallback(async () => {
-    let sessionId: string | null = null
-    try {
-      sessionId = window.localStorage.getItem(UNLOCK_SESSION_KEY)
+      if (!response.ok) {
+        setError('network')
+        return false
+      }
+      grant()
+      return true
     } catch {
-      sessionId = null
-    }
-    if (!sessionId) return
-    setPending(true)
-    try {
-      const response = await fetch('/api/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ session_id: sessionId }),
-      })
-      const data = await response.json()
-      if (data?.paid) grant()
+      setError('network')
+      return false
     } finally {
       setPending(false)
     }
   }, [grant])
 
-  return { unlocked, pending, checkout, restore }
+  return { unlocked, pending, error, submitCode }
 }
