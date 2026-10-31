@@ -52,5 +52,3 @@ export async function onRequestGet(context: { request: Request; env: Record<stri
 
   return Response.json({ products })
 }
-eturn Response.json({ products })
-}
