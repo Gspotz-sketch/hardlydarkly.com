@@ -406,6 +406,7 @@ function Reader({ chapter, bookmarks, setBookmarks, readChapters, setReadChapter
             <NarrationPlayer
               paragraphs={chapter.paragraphs}
               chapterTitle={chapter.title}
+              audioSrc={`/audio/chapters/${chapter.slug}.mp3`}
               onParagraph={(index) => setSpoken(index)}
               onEnded={() => { if (next && !isAdultChapter(next.number)) goRead(next.slug) }}
             />

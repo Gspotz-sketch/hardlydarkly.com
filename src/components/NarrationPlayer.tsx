@@ -4,6 +4,9 @@ import { Pause, Play, RotateCcw, SkipBack, SkipForward, Volume2 } from 'lucide-r
 type NarrationPlayerProps = {
   paragraphs: string[]
   chapterTitle: string
+  /** Pre-recorded neural-voice MP3 for this chapter. When absent/unreachable
+   *  the player falls back to the Web Speech API. */
+  audioSrc?: string
   onParagraph?: (index: number | null) => void
   onEnded?: () => void
 }
@@ -32,19 +35,115 @@ function pickVoice(): SpeechSynthesisVoice | null {
   return pool.slice().sort((a, b) => scoreVoice(b) - scoreVoice(a))[0] ?? null
 }
 
+/** Convert a playback time to the approximate paragraph index using word
+ *  fractions, so the reader highlight still tracks the MP3. */
+function paragraphAtTime(time: number, duration: number, paragraphs: string[]): number {
+  if (duration <= 0 || paragraphs.length === 0) return 0
+  const total = paragraphs.reduce((sum, p) => sum + p.split(/\s+/).length, 0)
+  if (total === 0) return 0
+  const targetWords = (time / duration) * total
+  let acc = 0
+  for (let i = 0; i < paragraphs.length; i += 1) {
+    acc += paragraphs[i].split(/\s+/).length
+    if (targetWords <= acc) return i
+  }
+  return paragraphs.length - 1
+}
+
+function formatTime(sec: number): string {
+  if (!Number.isFinite(sec) || sec < 0) return '0:00'
+  const m = Math.floor(sec / 60)
+  const s = Math.floor(sec % 60)
+  return `${m}:${s.toString().padStart(2, '0')}`
+}
+
 /**
- * Chapter narration via the Web Speech API (free, instant — no audio files).
- * Highlights the paragraph currently being spoken and auto-reports progress.
+ * Chapter narration. Prefers a pre-recorded MP3 (studio voice); falls back to
+ * the Web Speech API (free, instant) when the file isn't available yet.
  */
-export default function NarrationPlayer({ paragraphs, chapterTitle, onParagraph, onEnded }: NarrationPlayerProps) {
+export default function NarrationPlayer({ paragraphs, chapterTitle, audioSrc, onParagraph, onEnded }: NarrationPlayerProps) {
+  const [speechSupported] = useState(() => typeof window !== 'undefined' && 'speechSynthesis' in window)
+
+  // --- MP3 mode state ---
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const [audioMode, setAudioMode] = useState<'checking' | 'file' | 'tts'>('checking')
   const [playing, setPlaying] = useState(false)
-  const [position, setPosition] = useState(0) // paragraph cursor
-  const [supported] = useState(() => typeof window !== 'undefined' && 'speechSynthesis' in window)
+  const [time, setTime] = useState(0)
+  const [duration, setDuration] = useState(0)
+
+  useEffect(() => {
+    if (!audioSrc) { setAudioMode('tts'); return }
+    setAudioMode('checking')
+    setTime(0); setDuration(0); setPlaying(false)
+    const audio = new Audio()
+    audioRef.current = audio
+    audio.preload = 'metadata'
+    audio.src = audioSrc
+    const onReady = () => {
+      setDuration(audio.duration)
+      setAudioMode('file')
+    }
+    const onError = () => { audioRef.current = null; setAudioMode('tts') }
+    const onTime = () => {
+      setTime(audio.currentTime)
+      const idx = paragraphAtTime(audio.currentTime, audio.duration || 0, paragraphsRef.current)
+      onParagraphRef.current?.(idx)
+    }
+    const onEndedFile = () => {
+      setPlaying(false)
+      onParagraphRef.current?.(null)
+      onEndedRef.current?.()
+    }
+    audio.addEventListener('loadedmetadata', onReady)
+    audio.addEventListener('canplay', onReady)
+    audio.addEventListener('error', onError)
+    audio.addEventListener('timeupdate', onTime)
+    audio.addEventListener('ended', onEndedFile)
+    return () => {
+      audio.pause()
+      audio.removeEventListener('loadedmetadata', onReady)
+      audio.removeEventListener('canplay', onReady)
+      audio.removeEventListener('error', onError)
+      audio.removeEventListener('timeupdate', onTime)
+      audio.removeEventListener('ended', onEndedFile)
+      audioRef.current = null
+    }
+  }, [audioSrc])
+
+  const paragraphsRef = useRef(paragraphs)
+  paragraphsRef.current = paragraphs
+  const onParagraphRef = useRef(onParagraph)
+  onParagraphRef.current = onParagraph
+  const onEndedRef = useRef(onEnded)
+  onEndedRef.current = onEnded
+
+  const toggleFile = useCallback(() => {
+    const audio = audioRef.current
+    if (!audio) return
+    if (playing) { audio.pause(); setPlaying(false); return }
+    audio.play().then(() => setPlaying(true)).catch(() => setPlaying(false))
+  }, [playing])
+
+  const seekFile = useCallback((delta: number) => {
+    const audio = audioRef.current
+    if (!audio) return
+    audio.currentTime = Math.min(Math.max(0, audio.currentTime + delta), audio.duration || Infinity)
+    setTime(audio.currentTime)
+  }, [])
+
+  const restartFile = useCallback(() => {
+    const audio = audioRef.current
+    if (!audio) return
+    audio.currentTime = 0
+    setTime(0)
+    if (!playing) { audio.play().then(() => setPlaying(true)).catch(() => {}) }
+  }, [playing])
+
+  // --- Web Speech mode (fallback) ---
+  const [position, setPosition] = useState(0)
   const [voiceURI, setVoiceURI] = useState<string>('')
   const [voiceOptions, setVoiceOptions] = useState<SpeechSynthesisVoice[]>([])
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null)
-  const paragraphsRef = useRef(paragraphs)
-  paragraphsRef.current = paragraphs
 
   const refreshVoices = useCallback(() => {
     const list = englishVoices()
@@ -66,7 +165,7 @@ export default function NarrationPlayer({ paragraphs, chapterTitle, onParagraph,
   }, [onParagraph])
 
   const speakFrom = useCallback((startIndex: number) => {
-    if (!supported) return
+    if (!speechSupported) return
     window.speechSynthesis.cancel()
     const text = paragraphsRef.current.slice(startIndex).join('\n\n')
     const utterance = new SpeechSynthesisUtterance(text)
@@ -77,7 +176,6 @@ export default function NarrationPlayer({ paragraphs, chapterTitle, onParagraph,
     let cursor = startIndex
     utterance.onboundary = (event) => {
       if (event.name && event.name !== 'word') return
-      // charIndex is measured against the joined text; walk the cursor forward.
       let acc = 0
       for (let index = 0; index < paragraphsRef.current.length; index += 1) {
         acc += paragraphsRef.current[index].length + 2
@@ -107,9 +205,8 @@ export default function NarrationPlayer({ paragraphs, chapterTitle, onParagraph,
     onParagraph?.(startIndex)
     setPlaying(true)
     window.speechSynthesis.speak(utterance)
-  }, [supported, onParagraph, onEnded, chosenVoice])
+  }, [speechSupported, onParagraph, onEnded, chosenVoice])
 
-  // Cancel whenever the chapter changes or the component unmounts.
   useEffect(() => {
     return () => {
       window.speechSynthesis?.cancel()
@@ -123,8 +220,44 @@ export default function NarrationPlayer({ paragraphs, chapterTitle, onParagraph,
     return () => window.speechSynthesis?.removeEventListener('voiceschanged', refreshVoices)
   }, [refreshVoices])
 
-  if (!supported) return null
+  if (!speechSupported && audioMode !== 'file') return null
 
+  // ================= MP3 player =================
+  if (audioMode === 'file') {
+    return (
+      <div className="narration-player" role="region" aria-label={`Narration for ${chapterTitle}`}>
+        <span className="np-reel" aria-hidden="true"><Volume2 size={15} /></span>
+        <div className="np-info">
+          <strong>{playing ? 'Now narrating' : 'Narrated chapter'}</strong>
+          <span>{chapterTitle} — {formatTime(time)} / {formatTime(duration)}</span>
+        </div>
+        <div className="np-controls">
+          <button onClick={restartFile} aria-label="Restart chapter"><RotateCcw size={15} /></button>
+          <button onClick={() => seekFile(-15)} aria-label="Back 15 seconds"><SkipBack size={15} /></button>
+          {playing ? (
+            <button className="np-play" onClick={toggleFile} aria-label="Pause narration"><Pause size={17} /></button>
+          ) : (
+            <button className="np-play" onClick={toggleFile} aria-label="Play narration"><Play size={17} /></button>
+          )}
+          <button onClick={() => seekFile(15)} aria-label="Forward 15 seconds"><SkipForward size={15} /></button>
+          <button onClick={() => { audioRef.current?.pause(); setPlaying(false); audioRef.current && (audioRef.current.currentTime = 0); setTime(0); onParagraph?.(null) }} aria-label="Stop narration" className="np-stop">Stop</button>
+        </div>
+        <div className="np-voice"><span className="np-badge">Studio voice</span></div>
+        <div className="np-progress" aria-hidden="true"><i style={{ transform: `scaleX(${duration > 0 ? time / duration : 0})` }} /></div>
+      </div>
+    )
+  }
+
+  if (audioMode === 'checking') {
+    return (
+      <div className="narration-player" role="region" aria-label={`Narration for ${chapterTitle}`}>
+        <span className="np-reel" aria-hidden="true"><Volume2 size={15} /></span>
+        <div className="np-info"><strong>Read to me</strong><span>{chapterTitle}</span></div>
+      </div>
+    )
+  }
+
+  // ================= Web Speech fallback =================
   const total = paragraphs.length
   const atStart = position <= 0
   const atEnd = position >= total - 1

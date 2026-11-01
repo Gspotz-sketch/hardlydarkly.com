@@ -157,3 +157,15 @@ select:focus-visible {
   opacity: 0.9;
   mix-blend-mode: lighten;
 }
+
+.np-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--amber, #e0a458);
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  opacity: 0.85;
+}
