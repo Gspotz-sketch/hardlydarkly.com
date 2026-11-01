@@ -12,6 +12,7 @@ export const chapters: Chapter[] = [
   {
     "number": 0,
     "slug": "prologue",
+    "art": "/images/chapters/prologue_caltrain.jpg",
     "title": "Prologue",
     "paragraphs": [
       "The 4th and King Caltrain station was a study in gray. The concrete platforms, the overcast San Francisco sky, the rumbling diesel trains, the dull suits of the commuters—it all bled together into a single, monotonous smear. People moved with their heads down, earbuds in, locked into their own private worlds, completely oblivious to the fact that the air was beginning to curdle.",
@@ -44,6 +45,7 @@ export const chapters: Chapter[] = [
   {
     "number": 1,
     "slug": "chapter-1",
+    "art": "/images/chapters/chapter1_smudge.jpg",
     "title": "The Static Hum",
     "paragraphs": [
       "The summer heat in the Mission District didn’t just sit on you; it pressed down like a wet wool blanket, heavy with the smell of warm asphalt, frying oil from the taquerias on 24th, and exhaust. Inside Sam’s third-floor walk-up, the ceiling fan did nothing but chop the stagnant air into smaller, equally miserable pieces.",
@@ -65,6 +67,7 @@ export const chapters: Chapter[] = [
   {
     "number": 2,
     "slug": "chapter-2",
+    "art": "/images/chapters/chapter2_scarcity.jpg",
     "title": "Samantha White",
     "paragraphs": [
       "To understand why a thirty-five-year-old woman was sitting alone in a sweltering Mission District kitchen at two in the afternoon with an unplugged tape recorder, you had to understand the math of living on Social Security Disability Insurance in San Francisco.",
@@ -90,6 +93,7 @@ export const chapters: Chapter[] = [
   {
     "number": 3,
     "slug": "chapter-3",
+    "art": "/images/chapters/chapter3_pool.jpg",
     "title": "The Breach",
     "paragraphs": [
       "Sam backed up until the small of her back hit the edge of the cast-iron kitchen sink.",
@@ -140,6 +144,7 @@ export const chapters: Chapter[] = [
   {
     "number": 4,
     "slug": "chapter-4",
+    "art": "/images/chapters/chapter4_static.jpg",
     "title": "The Bleed",
     "paragraphs": [
       "Two weeks underground changes the way you measure time.",
@@ -165,6 +170,7 @@ export const chapters: Chapter[] = [
   {
     "number": 5,
     "slug": "chapter-5",
+    "art": "/images/chapters/chapter5_horizon.jpg",
     "title": "The Convergence",
     "paragraphs": [
       "The air inside the bunker seemed to suck inward as the red warning strobe above the workbench began to spin, casting long, rotating shadows across the copper mesh walls.",
@@ -194,6 +200,7 @@ export const chapters: Chapter[] = [
   {
     "number": 6,
     "slug": "chapter-6",
+    "art": "/images/chapters/chapter6_soma.jpg",
     "title": "Dead Air",
     "paragraphs": [
       "The overhead fluorescent tubes along Platform 3 didn't just shatter this time—they imploded in a wave down the length of the concourse, plunging the station into a flickering twilight lit only by the violet sparks of the rift and the glowing destination boards that now read 88:88 DELAYED on every line.",
@@ -219,6 +226,7 @@ export const chapters: Chapter[] = [
   {
     "number": 7,
     "slug": "chapter-7",
+    "art": "/images/chapters/chapter7_void.jpg",
     "title": "The Ghost in the Machine",
     "paragraphs": [
       "Nobody spoke until they were back beneath three layers of copper mesh in the Tenderloin basement.",
@@ -247,6 +255,7 @@ export const chapters: Chapter[] = [
   {
     "number": 8,
     "slug": "chapter-8",
+    "art": "/images/chapters/chapter8_echoes.jpg",
     "title": "Symptomatic",
     "paragraphs": [
       "She woke up at four in the morning because her left arm had gone completely numb.",
@@ -277,6 +286,7 @@ export const chapters: Chapter[] = [
   {
     "number": 9,
     "slug": "chapter-9",
+    "art": "/images/chapters/chapter9_skirmish.jpg",
     "title": "Sutro Tower",
     "paragraphs": [
       "By 5:00 AM, the bunker was in full mobilization.",
@@ -321,6 +331,7 @@ export const chapters: Chapter[] = [
   {
     "number": 11,
     "slug": "chapter-11",
+    "art": "/images/chapters/chapter11_viscosity.jpg",
     "title": "Playback",
     "paragraphs": [
       "The interior of the 1970s transmitter building was a labyrinth of cinderblock corridors, humming transformer rooms, and thick bundles of coaxial cable bolted to the ceiling.",
@@ -349,6 +360,7 @@ export const chapters: Chapter[] = [
   {
     "number": 12,
     "slug": "chapter-12",
+    "art": "/images/chapters/chapter12_cellar.jpg",
     "title": "Fourfootyest’s Gambit (Part 1)",
     "paragraphs": [
       "They climbed into the freezing dark of the tower’s central steel leg.",
