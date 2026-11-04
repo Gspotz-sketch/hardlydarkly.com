@@ -498,6 +498,11 @@ export default function App() {
       const id = window.location.hash.slice(1)
       if (id && !id.startsWith('/')) {
         window.setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' }), 40)
+      } else if (window.location.pathname.replace(/\/+$/, '') === '/memorabilia') {
+        // Checkout returns land on /memorabilia?ordered=1|canceled=1 (the SPA
+        // fallback serves the home view). Glide to the grid so the
+        // order-return panel is on screen.
+        window.setTimeout(() => document.getElementById('memorabilia')?.scrollIntoView({ behavior: 'smooth' }), 40)
       }
     }
   }, [route])

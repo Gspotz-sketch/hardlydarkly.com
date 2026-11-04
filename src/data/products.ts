@@ -4,6 +4,18 @@
 
 export type ProductFormat = 'canvas' | 'poster' | 'postcards'
 
+// Per-format retail prices. Server-side source of truth lives in
+// functions/_shared/products.ts (FORMAT_PRICES) — keep in sync. Each order
+// also carries a flat $1.50 order-processing fee added at checkout
+// (uniform tender-neutral fee), never sent to Printful.
+export const FORMAT_PRICES: Record<'postcard' | 'poster' | 'canvas', number> = {
+  postcard: 2.99,
+  poster: 13.99,
+  canvas: 27.99,
+}
+
+export const ORDER_PROCESSING_FEE = 1.5
+
 export type Product = {
   id: string
   title: string
@@ -17,6 +29,13 @@ export const formatLabel: Record<ProductFormat, string> = {
   canvas: 'Canvas',
   poster: 'Poster',
   postcards: 'Postcards',
+}
+
+/** Retail price per format — mirror of functions/_shared/print-spec.ts (SHAPES[].price). */
+export const formatPrice: Record<ProductFormat, number> = {
+  canvas: 27.99,
+  poster: 13.99,
+  postcards: 2.99,
 }
 
 const chapterArt = (file: string) => `/images/chapters/${file}`

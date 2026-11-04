@@ -1,0 +1,3 @@
+/* Cloudflare Pages: SPA fallback. /api/* is served by Pages Functions and
+   takes precedence over these redirects. */
+/* /index.html 200

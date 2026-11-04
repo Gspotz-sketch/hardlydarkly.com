@@ -2047,6 +2047,94 @@
   border-radius: 999px;
 }
 
+/* Buy buttons — same pill language as the format chips, but gold + alive */
+.mem-buy-row { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-top: 0.75rem; }
+.mem-buy {
+  padding: 0.45rem 0.85rem;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.58rem; letter-spacing: 0.18em; text-transform: uppercase;
+  color: #c9a86a;
+  background: transparent;
+  border: 1px solid rgba(201, 168, 106, 0.45);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
+.mem-buy:hover:not(:disabled) { background: #c9a86a; border-color: #c9a86a; color: #0a0d1f; }
+.mem-buy:disabled { opacity: 0.55; cursor: progress; }
+.mem-buy-error { color: #d98c8c; border-color: rgba(217, 140, 140, 0.55); }
+.mem-buy-error:hover:not(:disabled) { background: #d98c8c; border-color: #d98c8c; color: #0a0d1f; }
+
+/* Checkout return panels — quiet confirmation, no confetti */
+.mem-panel {
+  grid-column: 1 / -1;
+  padding: 1.7rem 1.9rem;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 110%, rgba(201, 168, 106, 0.12), transparent 60%),
+    #0a0d1f;
+  border: 1px solid rgba(232, 228, 216, 0.14);
+  border-radius: 3px;
+}
+.mem-panel-eyebrow {
+  margin: 0 0 0.6rem;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.58rem; letter-spacing: 0.2em; text-transform: uppercase;
+  color: #c9a86a;
+}
+.mem-panel h3 { font-size: 1.3rem; font-weight: 500; margin: 0 0 0.5rem; }
+.mem-panel p:not(.mem-panel-eyebrow) {
+  max-width: 34rem;
+  margin: 0;
+  line-height: 1.7;
+  color: rgba(232, 228, 216, 0.72);
+}
+.mem-panel-canceled { background: #0a0d1f; }
+.mem-panel-canceled .mem-panel-eyebrow { color: rgba(232, 228, 216, 0.45); }
+
+/* ===== Memorabilia checkout ===== */
+.mem-buy { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.15rem; }
+.mem-buy-btn {
+  padding: 0.34rem 0.7rem;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 0.56rem; letter-spacing: 0.18em; text-transform: uppercase;
+  color: rgba(232, 228, 216, 0.85);
+  background: transparent;
+  border: 1px solid rgba(201, 168, 106, 0.45);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: border-color 160ms ease, color 160ms ease, background 160ms ease;
+}
+.mem-buy-btn:hover:not(:disabled) {
+  color: #0a0d1f;
+  background: #c9a86a;
+  border-color: #c9a86a;
+}
+.mem-buy-btn:disabled { opacity: 0.55; cursor: wait; }
+.mem-buy-error {
+  margin: 0.9rem 0 0;
+  font-size: 0.8rem;
+  color: #d98a8a;
+}
+.mem-panel {
+  display: flex; align-items: flex-start; gap: 0.7rem;
+  margin-top: 1.1rem; padding: 0.85rem 1rem;
+  max-width: 26rem;
+  border: 1px solid rgba(232, 228, 216, 0.16);
+  border-radius: 3px;
+  background: rgba(232, 228, 216, 0.04);
+}
+.mem-panel-ok { border-color: rgba(201, 168, 106, 0.5); }
+.mem-panel-ok > svg { color: #c9a86a; flex-shrink: 0; margin-top: 0.15rem; }
+.mem-panel p { margin: 0; font-size: 0.82rem; line-height: 1.6; color: rgba(232, 228, 216, 0.7); }
+.mem-panel .mem-panel-title { color: rgba(232, 228, 216, 0.92); margin-bottom: 0.15rem; }
+.mem-panel-dismiss {
+  margin-left: auto; padding: 0.2rem;
+  background: transparent; border: none; cursor: pointer;
+  color: rgba(232, 228, 216, 0.5);
+  display: inline-flex;
+}
+.mem-panel-dismiss:hover { color: rgba(232, 228, 216, 0.9); }
+
 /* ===== Reader section (replaces ebook) ===== */
 .reader-section { padding: 6rem 6vw; display: grid; grid-template-columns: 1fr 1.15fr; gap: 4rem; align-items: center; }
 
