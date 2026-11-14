@@ -481,7 +481,25 @@ export default function App() {
   const [readChapters, setReadChapters] = usePersistentState<string[]>('hardly-darkly-read', [])
   const [lastRead, setLastRead] = usePersistentState('hardly-darkly-last-read', chapters[0].slug)
   const [ageTarget, setAgeTarget] = useState<string | null>(null)
-  const { unlocked, pending: unlockPending, error: unlockError, submitCode } = useUnlock()
+  const { unlocked, pending: unlockPending, error: unlockError, submitCode, verifyPayment } = useUnlock()
+
+  // Stripe verification return: /?verified=<session_id> — confirm server-side,
+  // then glide the reader back to their last chapter (the unlock flag is set
+  // by verifyPayment either way, so any chapter they open from here stays open).
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const sessionId = params.get('verified')
+    if (!sessionId) return
+    params.delete('verified')
+    const query = params.toString()
+    const clean = `${window.location.pathname}${query ? `?${query}` : ''}${window.location.hash}`
+    window.history.replaceState(null, '', clean)
+    void verifyPayment(sessionId).then((ok) => {
+      if (!ok || route.view === 'reader') return
+      const last = chapters.find((item) => item.slug === lastRead)
+      if (last && isAdultChapter(last.number)) goRead(last.slug)
+    })
+  }, [])
 
   useEffect(() => {
     const update = () => setRoute(routeFromHash())

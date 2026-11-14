@@ -120,6 +120,11 @@ export async function onRequestPost(context) {
 
   const session = event.data.object
 
+  // Adult-verification checkouts are not print orders — nothing to fulfill.
+  if (session.metadata?.hd_type === 'adult-verification') {
+    return json({ received: true, ignored: 'adult-verification' })
+  }
+
   // --- Recipient -----------------------------------------------------------
   // API 2026-09-30+: sessions no longer expose `shipping_details` —
   // the collected address now lives in customer_details (shipping == billing

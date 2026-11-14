@@ -8,6 +8,7 @@ export type UnlockState = {
   pending: boolean
   error: UnlockError
   submitCode: (code: string) => Promise<boolean>
+  verifyPayment: (sessionId: string) => Promise<boolean>
 }
 
 function readFlag(): boolean {
@@ -19,11 +20,12 @@ function readFlag(): boolean {
 }
 
 /**
- * Tracks the $2.99 unlock of the adult chapters (19–28).
- * Payment happens off-site on Cash App; the buyer comes back with an unlock
- * code, which /api/unlock checks against the UNLOCK_CODES env var.
- * The unlock flag lives in localStorage, so the same code also re-opens the
- * door on a new device — lost code, message the author for a reissue.
+ * Tracks the $3.00 one-time verification of the adult chapters (19–28).
+ * Primary path: Stripe checkout — pay once, come back with ?verified=<session>,
+ * verifyPayment() confirms it server-side and sets the flag. Legacy path:
+ * hand-cut unlock codes checked against UNLOCK_CODES (Cash App era).
+ * The flag lives in localStorage, so it also re-opens the door on a new
+ * device — lost code, message the author for a reissue.
  */
 export default function useUnlock(): UnlockState {
   const [unlocked, setUnlocked] = useState(readFlag)
@@ -38,6 +40,29 @@ export default function useUnlock(): UnlockState {
     }
     setUnlocked(true)
   }, [])
+
+  const verify = useCallback(async (sessionId: string) => {
+    const trimmed = sessionId.trim()
+    if (!trimmed) return false
+    setPending(true)
+    setError(null)
+    try {
+      const response = await fetch('/api/verify-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId: trimmed }),
+      })
+      if (!response.ok) return false
+      const data = (await response.json()) as { ok?: boolean }
+      if (!data.ok) return false
+      grant()
+      return true
+    } catch {
+      return false
+    } finally {
+      setPending(false)
+    }
+  }, [grant])
 
   const submitCode = useCallback(async (code: string) => {
     const trimmed = code.trim()
@@ -68,5 +93,5 @@ export default function useUnlock(): UnlockState {
     }
   }, [grant])
 
-  return { unlocked, pending, error, submitCode }
+  return { unlocked, pending, error, submitCode, verifyPayment: verify }
 }
