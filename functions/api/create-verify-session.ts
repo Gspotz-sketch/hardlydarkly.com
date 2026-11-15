@@ -15,6 +15,10 @@ const json = (data, status = 200) =>
 export async function onRequestPost(context) {
   const { env } = context
 
+  // PAYMENTS DISABLED — owner directive 2026-11-15. No new charges.
+  return json({ error: 'Payments temporarily disabled' }, 503)
+
+  // eslint-disable-next-line no-unreachable
   if (!env.STRIPE_SECRET_KEY) {
     return json({ error: 'Server misconfiguration: STRIPE_SECRET_KEY missing' }, 500)
   }

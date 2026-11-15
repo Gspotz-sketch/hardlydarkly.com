@@ -22,6 +22,10 @@ function newExtId(): string {
 export async function onRequestPost(context) {
   const { env } = context
 
+  // PAYMENTS DISABLED — owner directive 2026-11-15. No new charges.
+  return json({ error: 'Payments temporarily disabled' }, 503)
+
+  // eslint-disable-next-line no-unreachable
   let body
   try {
     body = await context.request.json()
