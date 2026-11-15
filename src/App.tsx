@@ -1,34 +1,4 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type Dispatch, type ReactNode, type SetStateAction } from 'react'
-
-// --- TEMPORARILY CLOSED (owner directive 2026-11-15) -----------------------
-function ClosedOverlay() {
-  return (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 9999,
-      background: 'rgba(10,10,14,0.97)',
-      display: 'flex', flexDirection: 'column',
-      alignItems: 'center', justifyContent: 'center',
-      textAlign: 'center', padding: '2rem',
-    }}>
-      <h1 style={{
-        fontWeight: 800,
-        fontSize: 'clamp(1.8rem, 5vw, 3.5rem)',
-        color: '#e879f9', letterSpacing: '0.08em',
-        margin: 0, textTransform: 'uppercase',
-        fontFamily: 'serif',
-      }}>
-        Temporarily Closed
-      </h1>
-      <p style={{
-        fontSize: 'clamp(0.75rem, 2vw, 1rem)',
-        color: 'rgba(255,255,255,0.5)', letterSpacing: '0.2em',
-        marginTop: '1rem', maxWidth: '500px', lineHeight: 1.8,
-      }}>
-        WE'LL BE BACK SOON
-      </p>
-    </div>
-  )
-}
 import {
   ArrowLeft,
   ArrowRight,
@@ -591,7 +561,6 @@ export default function App() {
 
   return (
     <div className="app-shell">
-      <ClosedOverlay />
       <SiteHeader route={route} lastRead={lastRead} />
       {route.view === 'reader' && current ? (
         <Reader

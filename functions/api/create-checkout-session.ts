@@ -22,10 +22,6 @@ function newExtId(): string {
 export async function onRequestPost(context) {
   const { env } = context
 
-  // SITE CLOSED — owner directive 2026-11-15. No new checkouts.
-  return json({ error: 'Site temporarily closed' }, 503)
-
-  // eslint-disable-next-line no-unreachable
   let body
   try {
     body = await context.request.json()
